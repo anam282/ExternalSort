@@ -1,0 +1,49 @@
+How to run the program:
+1.  The java file should be compiled using the following command: 
+				
+				javac ExternalSort.java
+
+                                Note - Please use compiler >= jdk8
+2. In order to run external sort
+				
+				java ExternalSort <full path of the input file>
+				eg - java ExternalSort ./input
+
+                               Note - for the input file, please provide the full path (absolute or                                  relative). If file is in the same directory as the compiled java file
+                               the relative path is  ./<input_file_name>
+
+3. The maximum memory of jvm can be set by using the option -Xmx10MB for 10MB of heap size. You can verify usig different heap size but it should be around 10MB (more than 2MB or the program will terminate) for correct execution of the program as the garbage collector does not free up memory as quickly.
+				
+				java -Xmx10MB ExternalSort ./input_big
+				java -Xmx4MB ExternalSort ./input_small
+
+Notes about the test file - The test file is an XML file so there can be words that don't make much sense. (No ebooks that I searched for was 1GB in size and I wanted to test with a larger text files.) I have also attached a 6MB text file which was used to test the code by setting heap size to around 4MB.
+
+Description of the algorithm:
+
+To sort words in a text file an list them in alphabetical order such that there are no duplicates, external merge sort has been used. It can be divided into three steps:
+1. Reading the contents of the file in chunks such that each chunk fits completely in the available memory.
+	The value of the minimum required free memory has been set to 2MB. After analyzing different values, the 2MB threshold seems to work well for all scenarios. 
+	Assumption - Greater than 2MB of free memory is required by the program to function properly.
+2. Splitting the contents into words and sorting them in memory
+The contents of the input file is read per line. Each line is split using the space/tab/end of line character as delimiter. Each word is then sanitized by removing all special characters and numbers. Every word is then added to a TreeSet which only keeps unique words sorted in ascending order.
+
+Assumption - All words are separated by either a space, tab or new line and words don't have any special characters or numbers. 
+
+3. Writing the sorted contents to files(sorted runs). 
+Once free memory reaches the threshold of 2MB, flush the contents of the treeset into a temporary file(sorted run). Call the garbage collector to run and potentially free up space occupied by unreferenced objects.
+
+4. Merging the sorted runs.
+Sorted runs are merged two at a time making successively longer runs. This has to be done till they are all merged into a single run which is our output file. In order to keep track of which sorted runs need to be merged, a Queue data structure is used to read two runs, merge them into a new file and add it to the end of the queue.
+
+The output file:
+
+The output file generated is named with a timestamp followed by a .out extention. It is a text file with all unique words in the input file sorted in lexicographical order, having one word per line.
+
+Assumptions:
+
+1. Greater than 2MB of free memory is required by the program to function properly.
+2. All words are separated by either a space, tab or new line and words don't have any special characters or numbers.
+3. The word may or may not be a real dictionary word due to the fact that XML files have non dictionary words.
+4. The comparison of two words is not case sensitive so "Apology", "APOLOGY" and "apology" are all same.
+
